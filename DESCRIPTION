@@ -15,7 +15,7 @@ Imports:
     bsseq,
     HDF5Array
 Remotes: 
-    Bioconductor/GenomicRanges,
-    Bioconductor/bsseq,
-    Bioconductor/HDF5Array
+    BiocManager::GenomicRanges,
+    BiocManager::bsseq,
+    BiocManager::HDF5Array
 RoxygenNote: 7.3.1
