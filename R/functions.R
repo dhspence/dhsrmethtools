@@ -1,8 +1,15 @@
 # dhsrmethtools/R/functions.R
 
+# Import necessary functions
+#' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges
+#' @importFrom data.table fread
+#' @importFrom HDF5Array writeHDF5Array
+NULL
+
 #' bed2bsseq
 #'
-#' @param file A simplfied bed file with methylation: chr\tstart\tend\tmethylation\coverage
+#' @param file A simplfied bed file with methylation: chr\\tstart\\tend\\tmethylation\\tcoverage
 #' @param samplename basename(file)
 #' @return a bsseq object
 #' @examples
@@ -19,23 +26,26 @@ bed2bsseq <- function(file,samplename=basename(file)){
   if (!requireNamespace("bsseq", quietly = TRUE)) {
     stop("Package 'bsseq' is required but not installed.")
   }
+  if (!requireNamespace("GenomicRanges", quietly = TRUE)) {
+    stop("Package 'GenomicRanges' is required but not installed.")
+  }
 
   samplename <- gsub(".bed(.gz)?", "", samplename)
   data <- NULL
   # Check if the file is gzipped
   if (grepl("\\.gz$", file)) {
     # Use zcat and awk to filter gzipped file
-    data <- fread(cmd = paste("gunzip -c ", file, " | awk -F'\t' '$1~/^chr[0-9XYM]+$/'"), header = FALSE, col.names=c("chr","start","end","meth","cov"))
+    data <- data.table::fread(cmd = paste("gunzip -c ", file, " | awk -F'\t' '$1~/^chr[0-9XYM]+$/'"), header = FALSE, col.names=c("chr","start","end","meth","cov"))
   } else {
     # Use awk to filter regular file
-    data <- fread(cmd = paste("awk -F'\t' '$1~/^chr[0-9XYM]+$/' ", file), header = FALSE, col.names=c("chr","start","end","meth","cov"))
+    data <- data.table::fread(cmd = paste("awk -F'\t' '$1~/^chr[0-9XYM]+$/' ", file), header = FALSE, col.names=c("chr","start","end","meth","cov"))
   }
   chromosomes <- paste0("chr",c(1:22,"X","Y"))
   data <- data[chr %in% chromosomes]
   data$meth <- data$meth * data$cov
-  hdf5_M <- writeHDF5Array(as.matrix(data$meth))
-  hdf5_C <- writeHDF5Array(as.matrix(data$cov))
-  bsOut <- BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(data$V1,IRanges(data$V2,data$V3)),sampleNames=samplename)
+  hdf5_M <- HDF5Array::writeHDF5Array(as.matrix(data$meth))
+  hdf5_C <- HDF5Array::writeHDF5Array(as.matrix(data$cov))
+  bsOut <- bsseq::BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(data$chr,IRanges(data$start,data$end)),sampleNames=samplename)
   return(bsOut)
 }
 
@@ -58,23 +68,27 @@ modkit2bsseq <- function(file,samplename=basename(file)){
   if (!requireNamespace("bsseq", quietly = TRUE)) {
     stop("Package 'bsseq' is required but not installed.")
   }
+  if (!requireNamespace("GenomicRanges", quietly = TRUE)) {
+    stop("Package 'GenomicRanges' is required but not installed.")
+  }
 
   samplename <- gsub(".basemods.bedmethyl(.gz)?", "", samplename)
   data <- NULL
   # Check if the file is gzipped
   if (grepl("\\.gz$", file)) {
     # Use zcat and awk to filter gzipped file
-    data <- fread(cmd = paste("gunzip -c ", file, "| awk -F'\t' '$4 == \"m\"'"), header = FALSE)
+    # include column names to match the ONT bedmethyl file from modkit
+    data <- data.table::fread(cmd = paste("gunzip -c ", file, "| awk -F'\t' '$4 == \"m\"'"), header = FALSE, col.names=c("chr","start","end","type","score","strand","start2","end2","color","valid_cov","fraction_mod","n_mod","n_canonical","n_othermod","n_deleted","n_fail","n_diff","n_nocall"))
   } else {
     # Use awk to filter regular file
-    data <- fread(cmd = paste("awk -F'\t' '$4 == \"m\"' ", file), header = FALSE)
+    data <- data.table::fread(cmd = paste("awk -F'\t' '$4 == \"m\"' ", file), header = FALSE, col.names=c("chr","start","end","type","score","strand","start2","end2","color","valid_cov","fraction_mod","n_mod","n_canonical","n_othermod","n_deleted","n_fail","n_diff","n_nocall"))
   }
   chromosomes <- paste0("chr",c(1:22,"X","Y"))
-  data <- data[V1 %in% chromosomes]
-  data$V3 <- data$V3 + 1
-  hdf5_M <- writeHDF5Array(as.matrix(data$V12))
-  hdf5_C <- writeHDF5Array(as.matrix(data$V10))
-  bsOut <- BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(data$V1,IRanges(data$V2,data$V3)),sampleNames=samplename)
+  data <- data[chr %in% chromosomes]
+  data$end <- data$end + 1
+  hdf5_M <- HDF5Array::writeHDF5Array(as.matrix(data$n_mod))
+  hdf5_C <- HDF5Array::writeHDF5Array(as.matrix(data$valid_cov))
+  bsOut <- bsseq::BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(data$chr,IRanges(data$start,data$end)),sampleNames=samplename)
   return(bsOut)
 }
 
@@ -97,23 +111,25 @@ pbcpg2bsseq <- function(file,samplename=basename(file)){
   if (!requireNamespace("bsseq", quietly = TRUE)) {
     stop("Package 'bsseq' is required but not installed.")
   }
+  if (!requireNamespace("GenomicRanges", quietly = TRUE)) {
+    stop("Package 'GenomicRanges' is required but not installed.")
+  }
 
   samplename <- gsub(".basemods.bedmethyl(.gz)?|.bed|.bed.gz|.5mC.bed.gz", "", samplename)
   data <- NULL
   # Check if the file is gzipped
   if (grepl("\\.gz$", file)) {
     # Use zcat and awk to filter gzipped file
-    data <- fread(cmd = paste("gunzip -c ", file), header=FALSE,col.names=c("chr","start","end","total_meth","type","coverage","mod","unmod","eff_meth"))
+    data <- data.table::fread(cmd = paste("gunzip -c ", file), header=FALSE,col.names=c("chr","start","end","total_meth","type","coverage","mod","unmod","eff_meth"))
   } else {
     # Use awk to filter regular file
-    data <- fread(file, header=FALSE,col.names=c("chr","start","end","total_meth","type","coverage","mod","unmod","eff_meth"))
+    data <- data.table::fread(file, header=FALSE,col.names=c("chr","start","end","total_meth","type","coverage","mod","unmod","eff_meth"))
   }
   chromosomes <- paste0("chr",c(1:22,"X","Y"))
-  dat <- read.table(file,sep="\t",)
-  dat$end <- dat$end + 1
-  dat <- dat[which(dat$chr %in% paste0("chr",c(1:22,"X","Y"))),]
-  hdf5_M <- writeHDF5Array(data.matrix(dat[,"mod"]))
-  hdf5_C <- writeHDF5Array(data.matrix(dat[,"coverage"]))
-  bsOut <- BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(dat$chr,IRanges(dat$start,dat$end)),sampleNames=samplename)
+  data$end <- data$end + 1
+  data <- data[chr %in% chromosomes]
+  hdf5_M <- HDF5Array::writeHDF5Array(data.matrix(data$mod))
+  hdf5_C <- HDF5Array::writeHDF5Array(data.matrix(data$coverage))
+  bsOut <- bsseq::BSseq(M = hdf5_M,Cov = hdf5_C,gr=GRanges(data$chr,IRanges(data$start,data$end)),sampleNames=samplename)
   return(bsOut)
 }

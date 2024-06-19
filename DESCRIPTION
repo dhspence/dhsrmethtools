@@ -10,12 +10,13 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     data.table,
-    BiocManager,
     GenomicRanges,
+    IRanges,
     bsseq,
     HDF5Array
 Remotes: 
     bioc::GenomicRanges,
+    bioc::IRanges,
     bioc::bsseq,
     bioc::HDF5Array
 RoxygenNote: 7.3.1
