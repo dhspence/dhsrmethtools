@@ -6,12 +6,20 @@
 #' @param samplename basename(file)
 #' @return a bsseq object
 #' @examples
-#' bed2bsseq(file="test.bed.gz",samplename="test")
+#' bed2bsseq(file=system.file("extdata", "test.bed.gz", package = "dhsrmethtools"),samplename="test")
 #' @export
 bed2bsseq <- function(file,samplename=basename(file)){
-  require(data.table)
-  require(HDF5Array)
-  require(bsseq)
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required but not installed.")
+  }
+  # check for bsseq and HDF5Array
+  if (!requireNamespace("HDF5Array", quietly = TRUE)) {
+    stop("Package 'HDF5Array' is required but not installed.")
+  }
+  if (!requireNamespace("bsseq", quietly = TRUE)) {
+    stop("Package 'bsseq' is required but not installed.")
+  }
+
   samplename <- gsub(".bed(.gz)?", "", samplename)
   data <- NULL
   # Check if the file is gzipped
@@ -37,12 +45,20 @@ bed2bsseq <- function(file,samplename=basename(file)){
 #' @param samplename basename(file)
 #' @return a bsseq object
 #' @examples
-#' modkit2bsseq(file="test.bedmethyl.gz",samplename="test")
+#' modkit2bsseq(file=system.file("extdata", "test.basemods.bedmethyl.gz", package = "dhsrmethtools"),samplename="test")
 #' @export
 modkit2bsseq <- function(file,samplename=basename(file)){
-  require(data.table)
-  require(HDF5Array)
-  require(bsseq)
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required but not installed.")
+  }
+  # check for bsseq and HDF5Array
+  if (!requireNamespace("HDF5Array", quietly = TRUE)) {
+    stop("Package 'HDF5Array' is required but not installed.")
+  }
+  if (!requireNamespace("bsseq", quietly = TRUE)) {
+    stop("Package 'bsseq' is required but not installed.")
+  }
+
   samplename <- gsub(".basemods.bedmethyl(.gz)?", "", samplename)
   data <- NULL
   # Check if the file is gzipped
@@ -68,12 +84,20 @@ modkit2bsseq <- function(file,samplename=basename(file)){
 #' @param samplename basename(file)
 #' @return a bsseq object
 #' @examples
-#' pbcpg2bsseq(file="test.bedmethyl.gz",samplename="test")
+#' pbcpg2bsseq(file=system.file("extdata", "test.pbcpg.bedmethyl.gz", package = "dhsrmethtools"),samplename="test")
 #' @export
 pbcpg2bsseq <- function(file,samplename=basename(file)){
-  require(data.table)
-  require(HDF5Array)
-  require(bsseq)
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required but not installed.")
+  }
+  # check for bsseq and HDF5Array
+  if (!requireNamespace("HDF5Array", quietly = TRUE)) {
+    stop("Package 'HDF5Array' is required but not installed.")
+  }
+  if (!requireNamespace("bsseq", quietly = TRUE)) {
+    stop("Package 'bsseq' is required but not installed.")
+  }
+
   samplename <- gsub(".basemods.bedmethyl(.gz)?|.bed|.bed.gz|.5mC.bed.gz", "", samplename)
   data <- NULL
   # Check if the file is gzipped
