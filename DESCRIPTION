@@ -10,6 +10,6 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     data.table,
-    bsseq
+    bsseq,
     HDF5Array
 RoxygenNote: 7.3.1
