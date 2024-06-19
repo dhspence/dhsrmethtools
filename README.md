@@ -1,6 +1,6 @@
 # dhsrmethtools
 
-This package provides functions to multiply numbers and add three to them.
+This package provides functions to convert various methylation bed files to bsseq objects.
 
 ## Installation
 
